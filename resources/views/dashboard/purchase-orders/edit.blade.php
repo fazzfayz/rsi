@@ -22,7 +22,7 @@
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-header"><h3 class="card-title mb-0">Edit Purchase Order: {{ $purchaseOrder->po_number }}</h3></div>
-            <form action="{{ route('purchase-orders.update', $purchaseOrder) }}" method="POST" id="poForm">
+            <form action="{{ route('purchase-orders.update', $purchaseOrder) }}" method="POST" id="poForm" novalidate>
                 @csrf
                 @method('PUT')
                 <div class="card-body">
@@ -48,8 +48,9 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="ref_number">Ref. No</label>
-                                <input type="text" class="form-control @error('ref_number') is-invalid @enderror" id="ref_number" name="ref_number" value="{{ old('ref_number', $purchaseOrder->ref_number) }}">
+                                <input type="text" class="form-control @error('ref_number') is-invalid @enderror" id="ref_number" name="ref_number" value="{{ old('ref_number', $purchaseOrder->ref_number ?: $purchaseOrder->po_number) }}" readonly>
                                 @error('ref_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <small class="form-text text-muted">Otomatis mengikuti Nomor PO</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -58,7 +59,14 @@
                                 <select class="form-control @error('vendor_id') is-invalid @enderror" id="vendor_id" name="vendor_id" required>
                                     <option value="">Pilih Vendor</option>
                                     @foreach($clients as $client)
-                                        <option value="{{ $client->id }}" {{ old('vendor_id', $purchaseOrder->vendor_id) == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
+                                        <option value="{{ $client->id }}" 
+                                                data-name="{{ $client->name }}"
+                                                data-email="{{ $client->email ?? '' }}"
+                                                data-contact="{{ $client->contact_person ?? $client->phone ?? '' }}"
+                                                data-address="{{ $client->address }}"
+                                                {{ old('vendor_id', $purchaseOrder->vendor_id) == $client->id ? 'selected' : '' }}>
+                                            {{ $client->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                                 @error('vendor_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -165,7 +173,7 @@
                                             </select>
                                         </td>
                                         <td><input type="number" name="items[{{ $index }}][unit_price]" class="form-control unit-price text-right" min="0" step="0.01" value="{{ $item->unit_price }}" required></td>
-                                        <td><input type="text" class="form-control total-price text-right" readonly value="{{ number_format($item->total_price, 2) }}"></td>
+                                        <td><input type="text" class="form-control total-price text-right" readonly value="{{ number_format($item->total_price, 2, '.', '') }}"></td>
                                         <td class="text-center"><button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-trash"></i></button></td>
                                     </tr>
                                     @endforeach
@@ -195,6 +203,35 @@
                         </div>
                     </div>
 
+                    <!-- Term and Conditions (bisa tambah/hapus sendiri) -->
+                    <div class="form-group mt-3">
+                        <label>Term and Conditions</label>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm" id="termsTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width: 50px;">No.</th>
+                                        <th>Deskripsi</th>
+                                        <th style="width: 60px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="termsBody">
+                                    @php $editTerms = old('terms', $purchaseOrder->terms ?? []); if (empty($editTerms)) { $editTerms = ['Quotation validity : 7 days', 'All price and availability can change anytime without prior notice.', 'Delivery time : 5 working day', 'Device Warranty : 1 year', 'Term Of Payment : Payment 100% after delivery', 'Customer must provide Purchase Order (PO)', 'Configuration warranty : 30 days']; } @endphp
+                                    @foreach($editTerms as $idx => $text)
+                                    <tr class="term-row">
+                                        <td class="text-center term-no">{{ $idx + 1 }}</td>
+                                        <td><input type="text" name="terms[{{ $idx }}]" class="form-control form-control-sm" value="{{ is_string($text) ? $text : ($text ?? '') }}" placeholder="Isi syarat & ketentuan"></td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-danger btn-sm remove-term" {{ count($editTerms) <= 1 ? 'disabled' : '' }}><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="button" class="btn btn-success btn-sm mt-1" id="addTerm"><i class="fas fa-plus mr-1"></i> Tambah Term</button>
+                    </div>
+
                     <!-- Notes and Signatory -->
                     <div class="row mt-3">
                         <div class="col-md-6">
@@ -206,14 +243,9 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="signatory_employee_id">Penandatangan <span class="text-danger">*</span></label>
-                                <select class="form-control @error('signatory_employee_id') is-invalid @enderror" id="signatory_employee_id" name="signatory_employee_id" required>
-                                    <option value="">Pilih Karyawan</option>
-                                    @foreach($employees as $employee)
-                                        <option value="{{ $employee->id }}" {{ old('signatory_employee_id', $purchaseOrder->signatory_employee_id) == $employee->id ? 'selected' : '' }}>{{ $employee->name }} - {{ $employee->position }}</option>
-                                    @endforeach
-                                </select>
-                                @error('signatory_employee_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <label>Penandatangan</label>
+                                <div class="form-control bg-light" style="cursor: default;">Nani Hadijah</div>
+                                <input type="hidden" name="signatory_employee_id" value="{{ optional($signatoryNaniHadijah)->id ?? '' }}">
                             </div>
                         </div>
                     </div>
@@ -227,6 +259,28 @@
         </div>
     </div>
 </div>
+
+<script>
+// Auto fill vendor data when vendor is selected (seperti surat jalan)
+document.getElementById('vendor_id').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const vendorName = selectedOption.getAttribute('data-name') || '';
+    const vendorEmail = selectedOption.getAttribute('data-email') || '';
+    const vendorContact = selectedOption.getAttribute('data-contact') || '';
+    const vendorAddress = selectedOption.getAttribute('data-address') || '';
+    
+    document.getElementById('vendor_name').value = vendorName;
+    document.getElementById('vendor_email').value = vendorEmail;
+    document.getElementById('vendor_contact_person').value = vendorContact;
+    document.getElementById('vendor_address').value = vendorAddress;
+});
+
+// Trigger on page load if vendor is already selected
+if (document.getElementById('vendor_id').value) {
+    document.getElementById('vendor_id').dispatchEvent(new Event('change'));
+}
+</script>
+
 @endsection
 
 @push('styles')
@@ -240,19 +294,9 @@
 $(document).ready(function() {
     let itemIndex = {{ count($purchaseOrder->items) }};
 
-    // Load vendor data when vendor is selected
-    $('#vendor_id').change(function() {
-        const vendorId = $(this).val();
-        if (vendorId) {
-            $.get(`/purchase-orders/vendor-data?vendor_id=${vendorId}`, function(data) {
-                $('#vendor_name').val(data.name);
-                $('#vendor_email').val(data.email);
-                $('#vendor_contact_person').val(data.contact_person);
-                $('#vendor_address').val(data.address);
-            });
-        } else {
-            $('#vendor_name, #vendor_email, #vendor_contact_person, #vendor_address').val('');
-        }
+    // Auto-fill REF No from PO Number
+    $('#po_number').on('input', function() {
+        $('#ref_number').val($(this).val());
     });
 
     // Add new item row
@@ -282,7 +326,7 @@ $(document).ready(function() {
                     <input type="number" name="items[${itemIndex}][unit_price]" class="form-control unit-price text-right" min="0" step="0.01" value="0" required>
                 </td>
                 <td>
-                    <input type="text" class="form-control total-price text-right" readonly value="0">
+                    <input type="text" class="form-control total-price text-right" readonly value="0.00">
                 </td>
                 <td class="text-center">
                     <button type="button" class="btn btn-danger btn-sm remove-item">
@@ -292,6 +336,11 @@ $(document).ready(function() {
             </tr>
         `;
         $('#itemsTable tbody').append(newRow);
+        
+        // Calculate total for new row if values are set
+        const newRowEl = $('#itemsTable tbody tr').last();
+        calculateItemTotal(newRowEl);
+        
         itemIndex++;
     });
 
@@ -299,18 +348,79 @@ $(document).ready(function() {
     $(document).on('click', '.remove-item', function() {
         if ($('#itemsTable tbody tr').length > 1) {
             $(this).closest('tr').remove();
+            updateRemoveButtons();
             calculateTotals();
         }
     });
 
-    // Calculate item total
-    $(document).on('input', '.quantity, .unit-price', function() {
-        const row = $(this).closest('tr');
+    // Term and Conditions: tambah / hapus / reindex
+    function reindexTerms() {
+        $('#termsBody .term-row').each(function(i) {
+            $(this).find('.term-no').text(i + 1);
+            $(this).find('input[name^="terms"]').attr('name', 'terms[' + i + ']');
+            $(this).find('.remove-term').prop('disabled', $('#termsBody .term-row').length <= 1);
+        });
+    }
+    $('#addTerm').on('click', function() {
+        const idx = $('#termsBody .term-row').length;
+        const row = '<tr class="term-row"><td class="text-center term-no">' + (idx + 1) + '</td>' +
+            '<td><input type="text" name="terms[' + idx + ']" class="form-control form-control-sm" value="" placeholder="Isi syarat & ketentuan"></td>' +
+            '<td class="text-center"><button type="button" class="btn btn-danger btn-sm remove-term"><i class="fas fa-trash"></i></button></td></tr>';
+        $('#termsBody').append(row);
+        reindexTerms();
+    });
+    $(document).on('click', '.remove-term', function() {
+        if ($('#termsBody .term-row').length <= 1) return;
+        $(this).closest('.term-row').remove();
+        reindexTerms();
+    });
+    reindexTerms();
+
+    // Update remove button states
+    function updateRemoveButtons() {
+        const rowCount = $('#itemsTable tbody tr').length;
+        $('.remove-item').prop('disabled', rowCount <= 1);
+    }
+
+    // Calculate item total - Perbaikan rumus: Total = Quantity × Unit Price (Real-time)
+    function calculateItemTotal(row) {
         const quantity = parseFloat(row.find('.quantity').val()) || 0;
         const unitPrice = parseFloat(row.find('.unit-price').val()) || 0;
+        
+        // Total = Quantity × Unit Price
         const total = quantity * unitPrice;
+        
+        // Format dengan 2 desimal
         row.find('.total-price').val(total.toFixed(2));
+        
+        // Recalculate totals
         calculateTotals();
+    }
+
+    // Event listener untuk quantity dan unit price - Real-time calculation
+    // Menggunakan multiple events untuk memastikan perhitungan real-time
+    $(document).on('input keyup paste change', '.quantity, .unit-price', function() {
+        const row = $(this).closest('tr');
+        calculateItemTotal(row);
+    });
+    
+    // Tambahan event listener khusus untuk input number (beberapa browser memerlukan ini)
+    $(document).on('keydown', '.quantity, .unit-price', function(e) {
+        // Trigger calculation saat tombol angka ditekan
+        if ((e.key >= '0' && e.key <= '9') || e.key === '.' || e.key === 'Backspace' || e.key === 'Delete') {
+            setTimeout(() => {
+                const row = $(this).closest('tr');
+                calculateItemTotal(row);
+            }, 10);
+        }
+    });
+
+    // Format currency on blur
+    $(document).on('blur', '.unit-price', function() {
+        const value = parseFloat($(this).val()) || 0;
+        $(this).val(value.toFixed(2));
+        // Recalculate after formatting
+        calculateItemTotal($(this).closest('tr'));
     });
 
     // Calculate totals
@@ -323,13 +433,58 @@ $(document).ready(function() {
         const vat = subtotal * 0.12;
         const total = subtotal + vat;
         
-        $('#subtotal').text('Rp ' + subtotal.toLocaleString('id-ID'));
-        $('#vat').text('Rp ' + vat.toLocaleString('id-ID'));
-        $('#total').text('Rp ' + total.toLocaleString('id-ID'));
+        $('#subtotal').text('Rp ' + subtotal.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0}));
+        $('#vat').text('Rp ' + vat.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0}));
+        $('#total').text('Rp ' + total.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0}));
     }
 
-    // Initial calculation
-    calculateTotals();
+    // Form validation
+    $('#poForm').on('submit', function(e) {
+        let isValid = true;
+        let errorMessage = '';
+
+        // Check if at least one item has description
+        let hasValidItem = false;
+        $('#itemsTable tbody tr').each(function() {
+            const description = $(this).find('input[name*="[description]"]').val();
+            if (description && description.trim() !== '') {
+                hasValidItem = true;
+            }
+        });
+
+        if (!hasValidItem) {
+            isValid = false;
+            errorMessage = 'Minimal harus ada satu item dengan description.';
+        }
+
+        // Check if vendor is selected
+        if (!$('#vendor_id').val()) {
+            isValid = false;
+            errorMessage = 'Vendor harus dipilih.';
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            alert(errorMessage);
+            return false;
+        }
+    });
+
+    // Recalculate all item totals on page load
+    function recalculateAllItems() {
+        $('#itemsTable tbody tr').each(function() {
+            calculateItemTotal($(this));
+        });
+    }
+
+    // Set initial REF No from PO Number if empty
+    if (!$('#ref_number').val() && $('#po_number').val()) {
+        $('#ref_number').val($('#po_number').val());
+    }
+
+    // Initial calculation and setup
+    recalculateAllItems();
+    updateRemoveButtons();
 });
 </script>
 @endpush 

@@ -3,256 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Tugas - {{ $letter->letter_number }}</title>
+    <title>Surat Tugas RSI</title>
     <style>
+        /* 1. PENGATURAN HALAMAN YANG LEBIH HEMAT TEMPAT */
         @page {
             size: A4;
-            margin-top: 3cm;
-            margin-bottom: 3cm;
-            margin-left: 3cm;
-            margin-right: 3cm;
+            margin: 1cm 2cm 1cm 2cm; /* Margin Atas/Bawah diperkecil jadi 1cm */
         }
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: 'Times New Roman', serif;
-            font-size: 12pt;
-            line-height: 1.5;
-            box-sizing: border-box;
-        }
+        
         body {
-            min-height: 100vh;
-            max-width: 100vw;
-            overflow: hidden;
-            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12pt; /* FONT DIPERKECIL */
+            line-height: 1.15; /* SPASI BARIS LEBIH RAPAT */
+            color: #000;
         }
-        .container {
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 20px;
-        }
+
+        /* HEADER & LOGO */
         .header {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 30px;
-            justify-content: center;
+            margin-bottom: 10px; /* Jarak dikurangi */
         }
         .logo {
-            width: 80px;
-            height: 80px;
-            margin-right: 0;
-            flex-shrink: 0;
+            width: 150px; /* Logo sedikit diperkecil */
+            height: auto;
+        }
+
+        /* JUDUL SURAT */
+        .title-section {
+            text-align: center;
+            margin-bottom: 20px; /* Jarak ke isi surat dikurangi */
         }
         .letter-title {
-            text-align: center;
-            font-size: 16pt;
-            font-weight: bold;
+            font-size: 14pt; /* Font judul sedikit diperkecil */
+            font-weight: normal;
             text-decoration: underline;
-            margin: 25px 0 15px 0;
-        }
-        .letter-number {
-            text-align: center;
-            font-size: 12pt;
-            margin-bottom: 20px;
-        }
-        .content {
-            text-align: justify;
-            margin-bottom: 25px;
-            font-size: 12pt;
-            padding: 0 10px;
-        }
-        .signer-info {
-            margin-bottom: 15px;
-        }
-        .signer-name {
-            font-weight: bold;
-        }
-        .assignment-info {
-            margin-bottom: 15px;
-        }
-        .footer {
-            margin-top: 30px;
-            text-align: left;
-            padding: 0 10px;
-        }
-        .footer-table {
-            width: 100%;
-            margin-top: 0;
-        }
-        .footer-table td {
-            vertical-align: top;
-            font-size: 12pt;
-        }
-        .date-location {
-            text-align: left;
-            padding-bottom: 0;
-            margin-bottom: 0;
-        }
-        .signature-block {
-            text-align: left;
-            width: 240px;
-            min-height: 90px;
-            margin-left: 0;
-            margin-right: auto;
-        }
-        .signature-space {
-            height: 70px;
-            /* Space for signature */
-        }
-        .signature-line {
-            border-top: 1px solid #000;
-            margin: 0 0 4px 0;
-            width: 180px;
-        }
-        .task-details {
-            margin: 15px 0 15px 0;
-            padding-left: 20px;
-        }
-        .task-details ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        .task-details li {
-            margin-bottom: 5px;
-            font-size: 11pt;
-        }
-        .separator {
-            border-top: 1px solid #000;
-            margin: 30px 0 15px 0;
-        }
-        .company-footer {
-            text-align: center;
-            font-size: 7pt;
-            color: #666;
-            margin-top: 10px;
-            padding: 0 10px;
-        }
-        .company-name {
-            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 2px;
         }
-        p {
-            margin: 8px 0;
+        .letter-number {
+            font-size: 10pt;
         }
-        table {
+
+        /* TABEL BIODATA */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px; /* Jarak dikurangi */
+        }
+        .info-table td {
+            vertical-align: top;
+            padding: 1px 0; /* Padding baris diperkecil */
+        }
+        .col-label { width: 100px; }
+        .col-separator { width: 15px; text-align: center; }
+
+        /* LIST PEKERJAAN */
+        .task-list {
+            margin: 5px 0 10px 0; /* Margin atas bawah dikurangi */
+            padding-left: 20px;
+        }
+        .task-list li {
+            padding-left: 5px;
+            margin-bottom: 0px; /* Jarak antar item list dirapatkan */
+        }
+
+        /* TANDA TANGAN */
+        .signature-section {
+            margin-top: 20px; /* Jarak dari text penutup ke TTD dikurangi */
+            width: 100%;
             page-break-inside: avoid;
         }
-        /* Prevent page break inside important blocks */
-        .content, .footer, .company-footer {
+        .signature-box {
+            width: 350px;
+            text-align: left;
+        }
+        .signature-img {
+            height: 60px; /* Tinggi TTD disesuaikan */
+            display: block;
+            margin: 2px 0;
+            object-fit: contain;
+            object-position: left;
+        }
+        .signature-space {
+            height: 60px;
+        }
+
+        /* FOOTER */
+        .footer {
+            position: relative;
+            margin-top: 90px; /* Jarak dari TTD ke Footer dikurangi */
+            width: 100%;
+            font-size: 7pt; /* Font footer diperkecil */
+            color: #444;
+            text-align: center;
+            line-height: 1.2;
+            border-top: 1px solid #888;
+            padding-top: 5px;
             page-break-inside: avoid;
         }
-        /* Force single page: prevent all page breaks inside body */
-        body, .container {
-            page-break-inside: avoid !important;
-            page-break-before: avoid !important;
-            page-break-after: avoid !important;
+        .footer strong {
+            color: #000;
+            display: block;
         }
+
+        /* UTILITY */
+        p { margin: 5px 0; text-align: justify; } /* Margin paragraf dikurangi */
+        .bold { font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header/Kop Surat - Logo di tengah atas -->
-        <div class="header">
-            <img src="{{ public_path('img/rsi.png') }}" alt="Ruang Solusi Internusa Logo" class="logo" style="object-fit: contain;">
-        </div>
 
-        <!-- Judul Surat -->
+    <div class="header">
+        <img src="{{ public_path('img/rsi.png') }}" class="logo">
+    </div>
+
+    <div class="title-section">
         <div class="letter-title">SURAT TUGAS</div>
+        <div class="letter-number">No. {{ $letter->letter_number ?? '...../ST-RSI/...../2024' }}</div>
+    </div>
 
-        <!-- Nomor Surat -->
-        <div class="letter-number">
-            Nomor: {{ $letter->letter_number }}
-        </div>
-
-        <!-- Isi Surat -->
-        <div class="content">
-            <p style="font-size: 12pt; margin-bottom: 10px;">Yang bertanda tangan di bawah ini:</p>
+    <p>Yang bertanda tangan di bawah ini:</p>
+    <table class="info-table">
+        <tr>
+            <td class="col-label">Nama</td>
+            <td class="col-separator">:</td>
+            <td>{{ $letter->signer->name ?? '....................................' }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Jabatan</td>
+            <td class="col-separator">:</td>
+            <td>{{ $letter->signer->position ?? '....................................' }}</td>
+        </tr>
+    </table>
+    <br>
+    <p>Memberikan perintah kerja kepada:</p>
+    <table class="info-table">
+        <tr>
+            <td class="col-label">Nama</td>
+            <td class="col-separator">:</td>
+            <td>{{ $letter->assignedTo->name ?? '....................................' }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Jabatan</td>
+            <td class="col-separator">:</td>
+            <td>{{ $letter->assignedTo->position ?? '....................................' }}</td>
+        </tr>
+    </table>
+    <br>
+    <p>
+        Untuk melakukan Pekerjaan Perawatan Komputer, Laptop dan Server di 
+        <span class="bold">{{ $letter->location ?? '................................................' }}</span>, 
+        dengan perincian sebagai berikut:
+    </p>
+    <br>
+    <ol class="task-list">
+        <li>Sistem Boot</li>
+        <li>Sistem Log-in</li>
+        <li>Konfigurasi Jaringan</li>
+        <li>Konfigurasi Hardware</li>
+        <li>Konfigurasi Browser/Proxy</li>
+        <li>Software Umum (Office, Email, Video Player, Music Player)</li>
+        <li>Virus dan Malware</li>
+        <li>Clearance</li>
+        <li>Komponen Pendukung</li>
+        <li>Hardware Lain</li>
+    </ol>
+    <br>
+    <p>
+        Demikian Surat Tugas ini dibuat agar dapat dilaksanakan sebaik-baiknya. Jika di lapangan terdapat suatu kondisi di luar ketentuan surat ini, dapat dibicarakan lebih lanjut.
+    </p>
+    <br>
+    <div class="signature-section">
+        <div class="signature-box">
+            <div>Jakarta, {{ $letter->formatted_assignment_date }}</div>
+       
+            <div style="font-weight: bold; margin-bottom: 2px;">PT RUANG SOLUSI INTERNUSA</div>
             
-            <table style="margin-left: 20px; margin-bottom: 15px;">
-                <tr>
-                    <td style="font-weight: bold; width: 90px;">Nama</td>
-                    <td style="width: 12px;">:</td>
-                    <td>{{ $letter->signer->name }}</td>
-                </tr>
-                <tr>
-                    <td style="font-weight: bold;">Jabatan</td>
-                    <td>:</td>
-                    <td>{{ $letter->signer->position }}</td>
-                </tr>
-            </table>
-
-            <p style="font-size: 12pt; margin-bottom: 10px;">Dengan ini memberikan perintah kerja kepada:</p>
+            @if(!empty($letter->signer->signature_path) && file_exists(public_path($letter->signer->signature_path)))
+                <img src="{{ public_path($letter->signer->signature_path) }}" class="signature-img" alt="TTD">
+            @else
+                <div class="signature-space"></div>
+            @endif
             
-            <table style="margin-left: 20px; margin-bottom: 15px;">
-                <tr>
-                    <td style="font-weight: bold; width: 90px;">Nama</td>
-                    <td style="width: 12px;">:</td>
-                    <td>{{ $letter->assignedTo->name }}</td>
-                </tr>
-                <tr>
-                    <td style="font-weight: bold;">Jabatan</td>
-                    <td>:</td>
-                    <td>{{ $letter->assignedTo->position }}</td>
-                </tr>
-            </table>
-
-            <p>Untuk melakukan pekerjaan perawatan komputer, laptop, dan server di {{ $letter->location }}, dengan perincian sebagai berikut:</p>
-
-            <div class="task-details">
-                <ul>
-                    <li>Sistem Boot</li>
-                    <li>Sistem Log-in</li>
-                    <li>Konfigurasi Jaringan</li>
-                    <li>Konfigurasi Hardware</li>
-                    <li>Konfigurasi Browser/Proxy</li>
-                    <li>Software Umum (Office, Email, Video Player, Music Player)</li>
-                    <li>Virus dan Malware</li>
-                    <li>Clearance</li>
-                    <li>Komponen Pendukung</li>
-                    <li>Hardware lain</li>
-                </ul>
-            </div>
-
-            <p>Demikian surat tugas ini dibuat agar dapat dilaksanakan dengan sebaik-baiknya. Jika di lapangan terdapat suatu kondisi di luar ketentuan surat ini, dapat dibicarakan lebih lanjut.</p>
-        </div>
-
-        <!-- Footer dan Tanda Tangan -->
-        <div class="footer">
-            <table class="footer-table">
-                <tr>
-                    <td style="width:50%">
-                        <div class="date-location">
-                            Jakarta, {{ $letter->formatted_assignment_date }}<br>
-                            <strong>PT RUANG SOLUSI INTERNUSA</strong>
-                        </div>
-                        <div class="signature-block">
-                            <div class="signature-space"></div>
-                            <div class="signature-line"></div>
-                            <div style="margin-top:2px;">
-                                <strong>{{ $letter->signer->name }}</strong>
-                            </div>
-                        </div>
-                    </td>
-                    <td style="width:50%"></td>
-                </tr>
-            </table>
-        </div>
-
-        <!-- Garis Pemisah -->
-        <div class="separator"></div>
-
-        <!-- Footer dengan info perusahaan -->
-        <div class="company-footer">
-            <div class="company-name">PT RUANG SOLUSI INTERNUSA</div>
-            <div>
-                Bintara Alam Permai, Jalan Alam Utama Raya 1A Blok A no. 6 Bintara Jaya - Bekasi Barat 17136<br>
-                Jalan Pondok Kelapa Timur E11 No. 2, Pondok Kelapa, Duren Sawit - Jakarta Timur<br>
-                T:+6221-86943113, e:info@ruangsolusi.com<br>
-                www.ruangsolusi.com
-            </div>
+            <div>{{ $letter->signer->name ?? '( .................................... )' }}</div>
         </div>
     </div>
+
+    <div class="footer">
+        <strong>PT RUANG SOLUSI INTERNUSA</strong>
+        Bintara Alam Permai, Jalan Alam Utama Raya 1A Blok A No. 6 Bintara Jaya - Bekasi Barat 17136<br>
+        Jalan Pondok Kelapa Timur E11 No. 2, Pondok Kelapa, Duren Sawit - Jakarta Timur<br>
+        T: +6221-86943113, e: info@ruang-solusi.com<br>
+        www.ruang-solusi.com
+    </div>
+
 </body>
-</html> 
+</html>

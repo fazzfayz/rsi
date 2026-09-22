@@ -1,3 +1,58 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Mobile navbar styles */
+.navbar-hamburger.open span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.navbar-hamburger.open span:nth-child(2) {
+    opacity: 0;
+}
+
+.navbar-hamburger.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+}
+
+#navbarLinks.open {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    scale: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Enhanced mobile menu styling - only for mobile */
+@media (max-width: 1023px) {
+    #navbarLinks {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 20px 20px;
+    }
+    
+    #navbarLinks.open {
+        background: #ffffff;
+        box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.12);
+    }
+    
+    #navbarLinks .navbar-link {
+        padding: 16px 20px;
+        margin: 4px 0;
+        border-radius: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px solid transparent;
+    }
+    
+    #navbarLinks .navbar-link:hover {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.2);
+        transform: translateX(8px);
+    }
+    
+    #navbarLinks .navbar-link.active {
+        background: rgba(59, 130, 246, 0.15);
+        border-color: rgba(59, 130, 246, 0.3);
+        color: #1e40af;
+    }
+}

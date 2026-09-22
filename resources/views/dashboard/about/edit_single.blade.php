@@ -23,6 +23,16 @@
                     @error('description')<div class="text-danger small">{{ $message }}</div>@enderror
                 </div>
                 <div class="form-group">
+                    <label>Visi</label>
+                    <textarea name="vision" class="form-control" rows="3" placeholder="Opsional">{{ old('vision', $about->vision ?? '') }}</textarea>
+                    @error('vision')<div class="text-danger small">{{ $message }}</div>@enderror
+                </div>
+                <div class="form-group">
+                    <label>Misi (1 baris 1 poin)</label>
+                    <textarea name="mission" class="form-control" rows="4" placeholder="Opsional">{{ old('mission', $about->mission ?? '') }}</textarea>
+                    @error('mission')<div class="text-danger small">{{ $message }}</div>@enderror
+                </div>
+                <div class="form-group">
                     <label>List Keunggulan (1 baris 1 poin)</label>
                     <textarea name="list_items" class="form-control" rows="4">{{ old('list_items', $about->list_items ?? '') }}</textarea>
                     @error('list_items')<div class="text-danger small">{{ $message }}</div>@enderror

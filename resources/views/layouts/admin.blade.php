@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Admin Panel') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/rsi.png') }}">
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
@@ -51,8 +53,8 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
         <a href="{{ route('dashboard') }}" class="brand-link">
-            <img src="https://ui-avatars.com/api/?name=AdminLTE" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-            <span class="brand-text font-weight-light">AdminLTE Panel</span>
+            <img src="{{ asset('img/rsi.png') }}" alt="Logo RSI" class="brand-image img-circle elevation-3" style="opacity: .95">
+            <span class="brand-text font-weight-light">RSI Admin Panel</span>
         </a>
         <!-- Sidebar -->
         <div class="sidebar">
@@ -78,6 +80,26 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{{ route('inquiries.index') }}" class="nav-link {{ request()->routeIs('inquiries.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-envelope-open-text"></i>
+                            <p>
+                                Inquiry Masuk
+                                @php
+                                    $unreadInquiriesCount = \App\Models\Inquiry::where('is_read', false)->count();
+                                @endphp
+                                @if($unreadInquiriesCount > 0)
+                                    <span class="badge badge-warning right">{{ $unreadInquiriesCount }}</span>
+                                @endif
+                            </p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('dashboard.settings.index') }}" class="nav-link {{ request()->routeIs('dashboard.settings.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-sliders-h"></i>
+                            <p>Pengaturan Website</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('clients.index') }}" class="nav-link {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tie"></i>
                             <p>Data Client</p>
@@ -87,6 +109,12 @@
                         <a href="{{ route('employees.index') }}" class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users"></i>
                             <p>Data Karyawan</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-shield"></i>
+                            <p>Manajemen User</p>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -105,6 +133,19 @@
                         <a href="{{ route('purchase-orders.index') }}" class="nav-link {{ request()->routeIs('purchase-orders.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-shopping-cart"></i>
                             <p>Purchase Order</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('delivery-orders.index') }}" 
+                            class="nav-link {{ request()->routeIs('delivery-orders.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-truck"></i>
+                            <p>Surat Jalan</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('pembukuan.index') }}" class="nav-link {{ request()->routeIs('pembukuan.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-book"></i>
+                            <p>Pembukuan</p>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -209,5 +250,7 @@
     resetTimers();
 })();
 </script>
+@stack('scripts')
+
 </body>
-</html> 
+</html>

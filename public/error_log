@@ -1,0 +1,20 @@
+[03-Feb-2026 15:12:07 Asia/Jakarta] PHP Warning:  require(/home/ruaf5683/public_html/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/ruaf5683/public_html/index.php on line 34
+[03-Feb-2026 15:12:07 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ruaf5683/public_html/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/ruaf5683/public_html/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ruaf5683/public_html/index.php on line 34
+[03-Feb-2026 15:13:51 Asia/Jakarta] PHP Warning:  require(/home/ruaf5683/public_html/RSI/vendor/autoload.php): Failed to open stream: No such file or directory in /home/ruaf5683/public_html/index.php on line 34
+[03-Feb-2026 15:13:51 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ruaf5683/public_html/RSI/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/ruaf5683/public_html/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ruaf5683/public_html/index.php on line 34
+[03-Feb-2026 15:14:21 Asia/Jakarta] PHP Warning:  require(/home/ruaf5683/public_html../RSI/vendor/autoload.php): Failed to open stream: No such file or directory in /home/ruaf5683/public_html/index.php on line 34
+[03-Feb-2026 15:14:21 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ruaf5683/public_html../RSI/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/ruaf5683/public_html/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ruaf5683/public_html/index.php on line 34
+[03-Feb-2026 15:14:23 Asia/Jakarta] PHP Warning:  require(/home/ruaf5683/public_html../RSI/vendor/autoload.php): Failed to open stream: No such file or directory in /home/ruaf5683/public_html/index.php on line 34
+[03-Feb-2026 15:14:23 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Failed opening required '/home/ruaf5683/public_html../RSI/vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/ruaf5683/public_html/index.php:34
+Stack trace:
+#0 {main}
+  thrown in /home/ruaf5683/public_html/index.php on line 34

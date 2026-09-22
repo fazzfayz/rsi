@@ -22,7 +22,7 @@
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-header"><h3 class="card-title mb-0">Form Purchase Order</h3></div>
-            <form action="{{ route('purchase-orders.store') }}" method="POST" id="poForm">
+            <form action="{{ route('purchase-orders.store') }}" method="POST" id="poForm" novalidate>
                 @csrf
                 <div class="card-body">
                     <!-- Header Information -->
@@ -37,7 +37,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="po_date">Tanggal PO <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control @error('po_date') is-invalid @enderror" id="po_date" name="po_date" value="{{ date('Y-m-d') }}" required>
+                                <input type="date" class="form-control @error('po_date') is-invalid @enderror" id="po_date" name="po_date" value="{{ old('po_date', date('Y-m-d')) }}" required>
                                 @error('po_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         </div>
@@ -47,8 +47,9 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="ref_number">Ref. No</label>
-                                <input type="text" class="form-control @error('ref_number') is-invalid @enderror" id="ref_number" name="ref_number" value="{{ old('ref_number') }}">
+                                <input type="text" class="form-control @error('ref_number') is-invalid @enderror" id="ref_number" name="ref_number" value="{{ old('ref_number', $poNumber) }}" readonly>
                                 @error('ref_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <small class="form-text text-muted">Otomatis mengikuti Nomor PO</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -57,7 +58,14 @@
                                 <select class="form-control @error('vendor_id') is-invalid @enderror" id="vendor_id" name="vendor_id" required>
                                     <option value="">Pilih Vendor</option>
                                     @foreach($clients as $client)
-                                        <option value="{{ $client->id }}" {{ old('vendor_id') == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
+                                        <option value="{{ $client->id }}" 
+                                                data-name="{{ $client->name }}"
+                                                data-email="{{ $client->email ?? '' }}"
+                                                data-contact="{{ $client->contact_person ?? $client->phone ?? '' }}"
+                                                data-address="{{ $client->address ?? '' }}"
+                                                {{ old('vendor_id') == $client->id ? 'selected' : '' }}>
+                                            {{ $client->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                                 @error('vendor_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -101,14 +109,14 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="ship_to_company">Ship To Company <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('ship_to_company') is-invalid @enderror" id="ship_to_company" name="ship_to_company" value="PT. RSI" required>
+                                <input type="text" class="form-control @error('ship_to_company') is-invalid @enderror" id="ship_to_company" name="ship_to_company" value="{{ old('ship_to_company', 'PT. RSI') }}" required>
                                 @error('ship_to_company')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="ship_to_address">Ship To Address <span class="text-danger">*</span></label>
-                                <textarea class="form-control @error('ship_to_address') is-invalid @enderror" id="ship_to_address" name="ship_to_address" rows="2" required>Jl. Contoh No. 123, Jakarta</textarea>
+                                <textarea class="form-control @error('ship_to_address') is-invalid @enderror" id="ship_to_address" name="ship_to_address" rows="2" required>{{ old('ship_to_address', 'Jl. Contoh No. 123, Jakarta') }}</textarea>
                                 @error('ship_to_address')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         </div>
@@ -131,88 +139,84 @@
                         </div>
                     </div>
 
-                    <!-- Items Table -->
+                    <!-- Items Table: No, Description, Part Number, QTY, UOM, Unit Price, Total IDR -->
                     <div class="form-group">
                         <label>Items <span class="text-danger">*</span></label>
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="itemsTable">
-                                <thead class="thead-light">
+                        <div class="table-responsive border border-dark">
+                            <table class="table table-bordered mb-0 bg-white" id="itemsTable">
+                                <thead>
                                     <tr>
-                                        <th>Description</th>
-                                        <th>Part Number</th>
-                                        <th class="text-center" style="width:120px">Qty</th>
-                                        <th class="text-center" style="width:140px">UOM</th>
-                                        <th class="text-right" style="width:160px">Unit Price</th>
-                                        <th class="text-right" style="width:180px">Total</th>
-                                        <th style="width:60px">Aksi</th>
+                                        <th class="text-center" style="width: 36px;">No</th>
+                                        <th class="text-left" style="width: 22%;">Description</th>
+                                        <th class="text-center" style="width: 85px;">Part Number</th>
+                                        <th class="text-center" style="width: 50px;">QTY</th>
+                                        <th class="text-center" style="width: 62px;">UOM</th>
+                                        <th class="text-right" style="width: 85px;">Unit Price</th>
+                                        <th class="text-right" style="width: 85px;">Total IDR</th>
+                                        <th class="text-center" style="width: 42px;">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="itemsBody">
                                     <tr class="item-row">
-                                        <td><input type="text" name="items[0][description]" class="form-control" required></td>
-                                        <td><input type="text" name="items[0][part_number]" class="form-control"></td>
-                                        <td><input type="number" name="items[0][quantity]" class="form-control quantity text-center" min="1" value="1" required></td>
-                                        <td>
-                                            <select name="items[0][uom]" class="form-control">
+                                        <td class="text-center item-no align-middle">1</td>
+                                        <td class="align-middle py-1 px-1">
+                                            <textarea name="items[0][description]" class="form-control form-control-sm border-0 rounded-0" rows="2" placeholder="Deskripsi" required></textarea>
+                                        </td>
+                                        <td class="align-middle py-1 px-1">
+                                            <input type="text" name="items[0][part_number]" class="form-control form-control-sm border-0" placeholder="-">
+                                        </td>
+                                        <td class="align-middle py-1 px-1">
+                                            <input type="number" name="items[0][quantity]" class="form-control form-control-sm quantity text-center border-0" min="0.01" step="0.01" value="1" required>
+                                        </td>
+                                        <td class="align-middle py-1 px-1">
+                                            <select name="items[0][uom]" class="form-control form-control-sm border-0">
+                                                <option value="Unit">Unit</option>
                                                 <option value="PCS">PCS</option>
-                                                <option value="UNIT">UNIT</option>
-                                                <option value="SET">SET</option>
-                                                <option value="BOX">BOX</option>
-                                                <option value="KG">KG</option>
-                                                <option value="METER">METER</option>
+                                                <option value="Set">Set</option>
+                                                <option value="Box">Box</option>
+                                                <option value="Meter">Meter</option>
+                                                <option value="Lot">Lot</option>
+                                                <option value="Roll">Roll</option>
                                             </select>
                                         </td>
-                                        <td><input type="number" name="items[0][unit_price]" class="form-control unit-price text-right" min="0" step="0.01" value="0" required></td>
-                                        <td><input type="text" class="form-control total-price text-right" readonly value="0"></td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-trash"></i></button>
+                                        <td class="align-middle py-1 px-1">
+                                            <input type="number" name="items[0][unit_price]" class="form-control form-control-sm unit-price text-right border-0" min="0" step="1" value="0" required>
+                                        </td>
+                                        <td class="text-right total-idr-display align-middle py-1 px-1">0</td>
+                                        <td class="text-center align-middle py-1 px-1">
+                                            <input type="hidden" name="items[0][item_type]" value="hardware">
+                                            <input type="hidden" class="total-price" value="0">
+                                            <button type="button" class="btn btn-danger btn-sm remove-item py-0 px-1" title="Hapus" disabled><i class="fas fa-trash"></i></button>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <button type="button" class="btn btn-success btn-sm" id="addItem"><i class="fas fa-plus mr-1"></i> Tambah Item</button>
+                        <button type="button" class="btn btn-success btn-sm mt-2" id="addItem"><i class="fas fa-plus mr-1"></i> Tambah Item</button>
                     </div>
 
-                    <!-- Totals -->
-                    <div class="row">
-                        <div class="col-md-6 offset-md-6">
-                            <table class="table table-sm mb-0">
-                                <tr>
-                                    <td class="text-muted"><strong>Subtotal:</strong></td>
-                                    <td class="text-right"><span id="subtotal">Rp 0</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-muted"><strong>VAT (12%):</strong></td>
-                                    <td class="text-right"><span id="vat">Rp 0</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-muted"><strong>Total:</strong></td>
-                                    <td class="text-right"><span id="total">Rp 0</span></td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Notes and Signatory -->
+                    <!-- Note (tetap / tidak bisa diubah) -->
+                    @php
+                        $fixedNotes = "- All shipments must include notes, invoices and receipts\n- We will return the goods if not in accordance with the order\n- Purchase order (PO) number must be listed on the note / invoice / receipt\n- If delivery of goods by partial, please include a copy of the PO";
+                    @endphp
+                    <input type="hidden" name="notes" value="{{ $fixedNotes }}">
                     <div class="row mt-3">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="notes">Notes</label>
-                                <textarea class="form-control @error('notes') is-invalid @enderror" id="notes" name="notes" rows="4">{{ old('notes') }}</textarea>
-                                @error('notes')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <label class="font-weight-bold">Note :</label>
+                                <div class="bg-light border rounded p-3 text-secondary" style="font-size: 0.9rem; line-height: 1.6;">
+                                    - All shipments must include notes, invoices and receipts<br>
+                                    - We will return the goods if not in accordance with the order<br>
+                                    - Purchase order (PO) number must be listed on the note / invoice / receipt<br>
+                                    - If delivery of goods by partial, please include a copy of the PO
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="signatory_employee_id">Penandatangan <span class="text-danger">*</span></label>
-                                <select class="form-control @error('signatory_employee_id') is-invalid @enderror" id="signatory_employee_id" name="signatory_employee_id" required>
-                                    <option value="">Pilih Karyawan</option>
-                                    @foreach($employees as $employee)
-                                        <option value="{{ $employee->id }}" {{ old('signatory_employee_id') == $employee->id ? 'selected' : '' }}>{{ $employee->name }} - {{ $employee->position }}</option>
-                                    @endforeach
-                                </select>
-                                @error('signatory_employee_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <label>Penandatangan</label>
+                                <div class="form-control bg-light" style="cursor: default;">Nani Hadijah</div>
+                                <input type="hidden" name="signatory_employee_id" value="{{ optional($signatoryNaniHadijah)->id ?? '' }}">
                             </div>
                         </div>
                     </div>
@@ -228,99 +232,143 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+#itemsTable { table-layout: fixed; border: 2px solid #000 !important; font-size: 0.9rem; }
+#itemsTable thead th {
+    background-color: #e9ecef;
+    font-weight: 600;
+    border: 1px solid #000 !important;
+    padding: 5px 4px;
+    vertical-align: middle;
+    font-size: 0.85rem;
+}
+#itemsTable tbody td {
+    border: 1px solid #000 !important;
+    vertical-align: middle;
+}
+#itemsTable .form-control-sm { font-size: 0.8rem; min-height: 28px; }
+#itemsTable .form-control-sm.border-0 { background: transparent; box-shadow: none; }
+#itemsTable textarea.form-control-sm { min-height: 38px; resize: vertical; }
+#itemsTable .total-idr-display { font-weight: 500; font-size: 0.85rem; }
+</style>
+@endpush
+
 @push('scripts')
 <script>
-$(document).ready(function() {
+(function () {
+    'use strict';
+
     let itemIndex = 1;
+    var UOM_OPTS = '<option value="Unit">Unit</option><option value="PCS">PCS</option><option value="Set">Set</option><option value="Box">Box</option><option value="Meter">Meter</option><option value="Lot">Lot</option><option value="Roll">Roll</option>';
 
-    // Load vendor data when vendor is selected
-    $('#vendor_id').change(function() {
-        const vendorId = $(this).val();
-        if (vendorId) {
-            $.get(`/purchase-orders/vendor-data?vendor_id=${vendorId}`, function(data) {
-                $('#vendor_name').val(data.name);
-                $('#vendor_email').val(data.email);
-                $('#vendor_contact_person').val(data.contact_person);
-                $('#vendor_address').val(data.address);
-            });
-        } else {
-            $('#vendor_name, #vendor_email, #vendor_contact_person, #vendor_address').val('');
-        }
-    });
+    function byId(id) { return document.getElementById(id); }
 
-    // Add new item row
-    $('#addItem').click(function() {
-        const newRow = `
-            <tr class="item-row">
-                <td>
-                    <input type="text" name="items[${itemIndex}][description]" class="form-control" required>
-                </td>
-                <td>
-                    <input type="text" name="items[${itemIndex}][part_number]" class="form-control">
-                </td>
-                <td>
-                    <input type="number" name="items[${itemIndex}][quantity]" class="form-control quantity text-center" min="1" value="1" required>
-                </td>
-                <td>
-                    <select name="items[${itemIndex}][uom]" class="form-control">
-                        <option value="PCS">PCS</option>
-                        <option value="UNIT">UNIT</option>
-                        <option value="SET">SET</option>
-                        <option value="BOX">BOX</option>
-                        <option value="KG">KG</option>
-                        <option value="METER">METER</option>
-                    </select>
-                </td>
-                <td>
-                    <input type="number" name="items[${itemIndex}][unit_price]" class="form-control unit-price text-right" min="0" step="0.01" value="0" required>
-                </td>
-                <td>
-                    <input type="text" class="form-control total-price text-right" readonly value="0">
-                </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-        `;
-        $('#itemsTable tbody').append(newRow);
-        itemIndex++;
-    });
-
-    // Remove item row
-    $(document).on('click', '.remove-item', function() {
-        if ($('#itemsTable tbody tr').length > 1) {
-            $(this).closest('tr').remove();
-            calculateTotals();
-        }
-    });
-
-    // Calculate item total
-    $(document).on('input', '.quantity, .unit-price', function() {
-        const row = $(this).closest('tr');
-        const quantity = parseFloat(row.find('.quantity').val()) || 0;
-        const unitPrice = parseFloat(row.find('.unit-price').val()) || 0;
-        const total = quantity * unitPrice;
-        row.find('.total-price').val(total.toFixed(2));
-        calculateTotals();
-    });
-
-    // Calculate totals
-    function calculateTotals() {
-        let subtotal = 0;
-        $('.total-price').each(function() {
-            subtotal += parseFloat($(this).val()) || 0;
-        });
-        
-        const vat = subtotal * 0.12;
-        const total = subtotal + vat;
-        
-        $('#subtotal').text('Rp ' + subtotal.toLocaleString('id-ID'));
-        $('#vat').text('Rp ' + vat.toLocaleString('id-ID'));
-        $('#total').text('Rp ' + total.toLocaleString('id-ID'));
+    function formatNumber(num) {
+        var n = Math.round(Number(num) || 0);
+        return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
 
-    // Initial calculation
-    calculateTotals();
-});
+    function buildItemRow(idx) {
+        return '<td class="text-center item-no align-middle"></td>' +
+            '<td class="align-middle py-1 px-1"><textarea name="items[' + idx + '][description]" class="form-control form-control-sm border-0 rounded-0" rows="2" placeholder="Deskripsi" required></textarea></td>' +
+            '<td class="align-middle py-1 px-1"><input type="text" name="items[' + idx + '][part_number]" class="form-control form-control-sm border-0" placeholder="-"></td>' +
+            '<td class="align-middle py-1 px-1"><input type="number" name="items[' + idx + '][quantity]" class="form-control form-control-sm quantity text-center border-0" min="0.01" step="0.01" value="1" required></td>' +
+            '<td class="align-middle py-1 px-1"><select name="items[' + idx + '][uom]" class="form-control form-control-sm border-0">' + UOM_OPTS + '</select></td>' +
+            '<td class="align-middle py-1 px-1"><input type="number" name="items[' + idx + '][unit_price]" class="form-control form-control-sm unit-price text-right border-0" min="0" step="1" value="0" required></td>' +
+            '<td class="text-right total-idr-display align-middle py-1 px-1">0</td>' +
+            '<td class="text-center align-middle py-1 px-1">' +
+                '<input type="hidden" name="items[' + idx + '][item_type]" value="hardware">' +
+                '<input type="hidden" class="total-price" value="0">' +
+                '<button type="button" class="btn btn-danger btn-sm remove-item py-0 px-1" title="Hapus"><i class="fas fa-trash"></i></button>' +
+            '</td>';
+    }
+
+    function calculateRow(row) {
+        var q = parseFloat(row.querySelector('.quantity') && row.querySelector('.quantity').value) || 0;
+        var p = parseFloat(row.querySelector('.unit-price') && row.querySelector('.unit-price').value) || 0;
+        var t = q * p;
+        var totalEl = row.querySelector('.total-price');
+        var displayEl = row.querySelector('.total-idr-display');
+        if (totalEl) totalEl.value = t.toFixed(2);
+        if (displayEl) displayEl.textContent = formatNumber(t);
+        renumberRows();
+    }
+
+    function renumberRows() {
+        var rows = document.querySelectorAll('#itemsBody .item-row');
+        rows.forEach(function (r, i) {
+            var no = r.querySelector('.item-no');
+            if (no) no.textContent = String(i + 1);
+        });
+    }
+
+    function updateRemoveButtons() {
+        var rows = document.querySelectorAll('#itemsBody .item-row');
+        var disable = rows.length <= 1;
+        rows.forEach(function (r) {
+            var btn = r.querySelector('.remove-item');
+            if (btn) btn.disabled = disable;
+        });
+    }
+
+    function onDocClick(e) {
+        var t = e && e.target;
+        if (!t || !t.closest) return;
+        var rb = t.closest('.remove-item');
+        if (rb) {
+            var row = rb.closest('tr');
+            if (!row || !row.classList.contains('item-row')) return;
+            if (byId('itemsBody') && !byId('itemsBody').contains(row)) return;
+            if (document.querySelectorAll('#itemsBody .item-row').length <= 1) return;
+            e.preventDefault();
+            row.remove();
+            renumberRows();
+            updateRemoveButtons();
+            return;
+        }
+    }
+
+    function onInput(e) {
+        var el = e.target;
+        if (!el || (!el.classList.contains('quantity') && !el.classList.contains('unit-price'))) return;
+        var row = el.closest ? el.closest('tr') : null;
+        if (row && row.classList.contains('item-row')) calculateRow(row);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var vs = byId('vendor_id');
+        if (vs) {
+            vs.addEventListener('change', function () {
+                var opt = this.options[this.selectedIndex];
+                var g = function (k) { return opt ? (opt.getAttribute('data-' + k) || '') : ''; };
+                var f = byId('vendor_name');   if (f) f.value = g('name');
+                var e = byId('vendor_email'); if (e) e.value = g('email');
+                var c = byId('vendor_contact_person'); if (c) c.value = g('contact');
+                var a = byId('vendor_address');        if (a) a.value = g('address');
+            });
+            if (vs.value) vs.dispatchEvent(new Event('change'));
+        }
+
+        var addBtn = byId('addItem');
+        if (addBtn) addBtn.addEventListener('click', function () {
+            var tbody = byId('itemsBody');
+            if (!tbody) return;
+            var tr = document.createElement('tr');
+            tr.className = 'item-row';
+            tr.innerHTML = buildItemRow(itemIndex);
+            tbody.appendChild(tr);
+            itemIndex++;
+            renumberRows();
+            updateRemoveButtons();
+        });
+
+        document.addEventListener('click', onDocClick);
+        document.addEventListener('input', onInput);
+
+        renumberRows();
+        updateRemoveButtons();
+    });
+})();
 </script>
-@endpush 
+@endpush

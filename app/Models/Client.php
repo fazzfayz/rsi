@@ -9,29 +9,21 @@ class Client extends Model
 {
     use HasFactory;
 
+    // Masukkan SEMUA nama kolom tabel di sini agar bisa disimpan
     protected $fillable = [
         'name',
+        'contact_person', // Wajib ada
+        'jabatan',
         'address',
-        'join_year',
+        'join_year',      // WAJIB ADA (Solusi Error Gambar 10)
         'phone',
         'email',
         'description',
-        'status'
+        'status',         // Wajib ada
     ];
 
-    protected $casts = [
-        'join_year' => 'integer',
-    ];
-
-    public function getJoinYearFormattedAttribute()
+    public function purchaseOrders()
     {
-        return $this->join_year;
-    }
-
-    public function getStatusBadgeAttribute()
-    {
-        return $this->status === 'active' 
-            ? '<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Aktif</span>'
-            : '<span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Tidak Aktif</span>';
+        return $this->hasMany(\App\Models\PurchaseOrder::class, 'vendor_id');
     }
 }

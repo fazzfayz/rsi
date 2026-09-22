@@ -313,12 +313,21 @@
                         </div>
                     </a>
                     
-                    <a href="{{ route('clients.index') }}" 
+                    <a href="{{ route('clients.index') }}"
                        class="flex items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">
                         <i class="fas fa-user-tie text-orange-600 text-xl mr-3"></i>
                         <div>
                             <p class="font-medium text-orange-900">Data Client</p>
                             <p class="text-sm text-orange-700">Kelola data client</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('users.index') }}"
+                       class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                        <i class="fas fa-user-shield text-purple-600 text-xl mr-3"></i>
+                        <div>
+                            <p class="font-medium text-purple-900">Manajemen User</p>
+                            <p class="text-sm text-purple-700">Kelola user sistem</p>
                         </div>
                     </a>
                 </div>

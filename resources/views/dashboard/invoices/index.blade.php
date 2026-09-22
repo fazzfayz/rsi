@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('header')
-    <h1 class="m-0">Data Invoice</h1>
+    <h1 class="m-0"></h1>
 @endsection
 
 @section('content')
@@ -22,10 +22,16 @@
         <!-- Search and Filter -->
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
             <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Invoice</h2>
+                    <a href="{{ route('invoices.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <i class="fas fa-plus mr-2"></i>Buat Invoice
+                    </a>
+                </div>
                 <form method="GET" action="{{ route('invoices.index') }}" class="flex flex-wrap gap-4">
                     <div class="flex-1 min-w-0">
-                        <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Cari nomor invoice, client, atau signer..." 
+                        <input type="text" name="search" value="{{ request('search') }}"
+                               placeholder="Cari nomor invoice, client, atau signer..."
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div class="flex-shrink-0">
@@ -45,14 +51,6 @@
                     </div>
                 </form>
             </div>
-        </div>
-
-        <!-- Create Button -->
-        <div class="mb-6">
-            <a href="{{ route('invoices.create') }}" 
-               class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors duration-200">
-                <i class="fas fa-plus mr-2"></i>Buat Invoice
-            </a>
         </div>
 
         <!-- Invoice List -->
@@ -164,8 +162,18 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="mt-6">
-                        {{ $invoices->links() }}
+                    <div class="mt-6 flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div class="text-sm text-gray-500 mb-3 md:mb-0">
+                            Menampilkan <strong>{{ $invoices->firstItem() ?? 0 }}</strong>
+                            -
+                            <strong>{{ $invoices->lastItem() ?? 0 }}</strong>
+                            dari
+                            <strong>{{ $invoices->total() }}</strong>
+                            data
+                        </div>
+                        <div>
+                            {{ $invoices->onEachSide(1)->appends(request()->query())->links('pagination::bootstrap-4') }}
+                        </div>
                     </div>
                 @else
                     <div class="text-center py-8">

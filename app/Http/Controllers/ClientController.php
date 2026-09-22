@@ -61,6 +61,8 @@ class ClientController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'jabatan' => 'nullable|string|max:255',
             'address' => 'required|string',
             'join_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'phone' => 'nullable|string|max:20',
@@ -98,6 +100,8 @@ class ClientController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'jabatan' => 'nullable|string|max:255',
             'address' => 'required|string',
             'join_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'phone' => 'nullable|string|max:20',

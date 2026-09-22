@@ -15,10 +15,25 @@
     </div>
 
     <div class="content">
+        @isset($inquiryTypeLabel)
+            <p><strong>Jenis inquiry:</strong> {{ $inquiryTypeLabel }}</p>
+        @endisset
+        @isset($serviceTitle)
+            <p><strong>Layanan:</strong> {{ $serviceTitle }}</p>
+        @endisset
         <p><strong>Nama:</strong> {{ $name }}</p>
+        @if(!empty($company) && $company !== '-')
+            <p><strong>Perusahaan:</strong> {{ $company }}</p>
+        @endif
         <p><strong>Email:</strong> {{ $email }}</p>
+        @if(!empty($phone) && $phone !== '-')
+            <p><strong>No. Telepon / WhatsApp:</strong> {{ $phone }}</p>
+        @endif
+        @if(!empty($service_needed) && $service_needed !== '-')
+            <p><strong>Kebutuhan Layanan:</strong> {{ $service_needed }}</p>
+        @endif
         <p><strong>Pesan:</strong></p>
-        <p>{{ $messageContent }}</p>
+        <p>{!! nl2br(e($messageContent)) !!}</p>
     </div>
 
     <div class="footer">

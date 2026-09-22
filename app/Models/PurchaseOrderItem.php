@@ -12,6 +12,7 @@ class PurchaseOrderItem extends Model
 
     protected $fillable = [
         'purchase_order_id',
+        'item_type',
         'description',
         'part_number',
         'quantity',
@@ -21,14 +22,37 @@ class PurchaseOrderItem extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
+        'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'total_price' => 'decimal:2',
     ];
 
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-calculate total_price before saving
+        static::saving(function ($item) {
+            if ($item->quantity && $item->unit_price) {
+                $item->total_price = $item->quantity * $item->unit_price;
+            }
+        });
+    }
+
     public function purchaseOrder(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class);
+    }
+
+    /**
+     * Calculate total price based on quantity and unit price
+     */
+    public function calculateTotalPrice(): void
+    {
+        $this->total_price = $this->quantity * $this->unit_price;
     }
 
     public function getFormattedUnitPriceAttribute(): string

@@ -195,8 +195,8 @@
                         <h6 class="text-muted">Penandatangan</h6>
                         <div class="border rounded p-3 bg-light d-flex align-items-center" style="min-height: 120px;">
                             <div>
-                                <div class="font-weight-bold">{{ $purchaseOrder->signatoryEmployee->name ?? '-' }}</div>
-                                <div class="text-muted small">{{ $purchaseOrder->signatoryEmployee->position ?? '-' }}</div>
+                                <div class="font-weight-bold">{{ optional($purchaseOrder->signatoryEmployee)->name ?? 'Nani Hadijah' }}</div>
+                                <div class="text-muted small">{{ optional($purchaseOrder->signatoryEmployee)->position ?? '' }}</div>
                             </div>
                         </div>
                     </div>

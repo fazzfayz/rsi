@@ -1,20 +1,22 @@
 @extends('layouts.admin')
 
-@section('header')
-    <h1 class="m-0">Edit Invoice</h1>
-@endsection
-
 @section('content')
 <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        @if(session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                {{ session('error') }}
-            </div>
-        @endif
-
+    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
+            <div class="p-6 text-gray-900">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Edit Invoice</h2>
+                    <a href="{{ route('invoices.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        <i class="fas fa-arrow-left mr-2"></i>Kembali
+                    </a>
+                </div>
+
+                @if(session('error'))
+                    <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        {{ session('error') }}
+                    </div>
+                @endif
                 <form action="{{ route('invoices.update', $invoice->id) }}" method="POST" id="invoiceForm">
                     @csrf
                     @method('PUT')
@@ -26,7 +28,14 @@
                             <select name="client_id" id="client_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">Pilih Client</option>
                                 @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" {{ old('client_id', $invoice->client_id) == $client->id ? 'selected' : '' }}>
+                                    @php
+                                        $latestPo = $client->purchaseOrders->first();
+                                    @endphp
+                                    <option value="{{ $client->id }}"
+                                            data-contact-person="{{ e($client->contact_person ?? '') }}"
+                                            data-jabatan="{{ e($client->jabatan ?? '') }}"
+                                            data-po-ref="{{ e(optional($latestPo)->ref_number ?? '') }}"
+                                            {{ old('client_id', $invoice->client_id) == $client->id ? 'selected' : '' }}>
                                         {{ $client->name }}
                                     </option>
                                 @endforeach
@@ -74,9 +83,21 @@
 
                         <div>
                             <label for="vendor_code" class="block text-sm font-medium text-gray-700 mb-2">Kode Vendor</label>
-                            <input type="text" name="vendor_code" id="vendor_code" value="{{ old('vendor_code', $invoice->vendor_code) }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" name="vendor_code" id="vendor_code" value="{{ old('vendor_code', $invoice->vendor_code) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Contoh: DTSIR">
                             @error('vendor_code')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="po_ref_number" class="block text-sm font-medium text-gray-700 mb-2">PO Ref Number</label>
+                            <input type="text" name="po_ref_number" id="po_ref_number" value="{{ old('po_ref_number', $invoice->po_ref_number) }}"
+                                   readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 cursor-not-allowed"
+                                   placeholder="Pilih client untuk mengisi otomatis">
+                            @error('po_ref_number')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -318,6 +339,23 @@ function formatNumber(num) {
     return new Intl.NumberFormat('id-ID').format(num);
 }
 
+// Isi Attention To, Jabatan Attention, dan PO Ref Number dari data client yang dipilih (PO Ref otomatis, tidak bisa diedit)
+function fillFromClient() {
+    const clientSelect = document.getElementById('client_id');
+    const opt = clientSelect.options[clientSelect.selectedIndex];
+    const poRefInput = document.getElementById('po_ref_number');
+    if (!opt || !opt.value) {
+        document.getElementById('attention_to').value = '';
+        document.getElementById('attention_name').value = '';
+        poRefInput.value = '';
+        return;
+    }
+    document.getElementById('attention_to').value = opt.dataset.contactPerson || '';
+    document.getElementById('attention_name').value = opt.dataset.jabatan || '';
+    poRefInput.value = opt.dataset.poRef || '';
+}
+document.getElementById('client_id').addEventListener('change', fillFromClient);
+
 // Add event listeners to existing items
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.item-row').forEach(itemRow => {
@@ -326,6 +364,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add event listener to PPN checkbox
     document.getElementById('include_ppn').addEventListener('change', calculateTotals);
+    
+    // Isi dari client yang dipilih (termasuk saat pertama buka form edit)
+    fillFromClient();
     
     // Initial calculation
     calculateTotals();

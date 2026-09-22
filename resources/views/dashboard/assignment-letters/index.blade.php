@@ -132,8 +132,18 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="mt-6">
-                    {{ $letters->appends(request()->query())->links() }}
+                <div class="mt-6 flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div class="text-sm text-gray-500 mb-3 md:mb-0">
+                        Menampilkan <strong>{{ $letters->firstItem() ?? 0 }}</strong>
+                        -
+                        <strong>{{ $letters->lastItem() ?? 0 }}</strong>
+                        dari
+                        <strong>{{ $letters->total() }}</strong>
+                        data
+                    </div>
+                    <div>
+                        {{ $letters->onEachSide(1)->appends(request()->query())->links('pagination::bootstrap-4') }}
+                    </div>
                 </div>
             </div>
         </div>

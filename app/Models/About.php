@@ -13,6 +13,8 @@ class About extends Model
         'image',
         'title',
         'description',
+        'vision',
+        'mission',
         'list_items',
     ];
 }

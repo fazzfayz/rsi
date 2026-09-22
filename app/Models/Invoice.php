@@ -17,6 +17,7 @@ class Invoice extends Model
         'invoice_date',
         'due_date',
         'vendor_code',
+        'po_ref_number',
         'attention_to',
         'attention_name',
         'subtotal',

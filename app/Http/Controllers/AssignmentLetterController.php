@@ -19,17 +19,26 @@ class AssignmentLetterController extends Controller
         $status = $request->get('status');
         
         $letters = AssignmentLetter::with(['signer', 'assignedTo']);
-        
+
         if ($search) {
             $letters->search($search);
         }
-        
+
         if ($status && $status !== 'all') {
             $letters->where('status', $status);
         }
-        
-        $letters = $letters->orderBy('created_at', 'desc')->paginate(10);
-        
+
+        // Pagination seperti Surat Jalan:
+        // - 10 data per halaman, halaman "terkunci" (data baru masuk halaman berikutnya, tidak menggeser halaman awal)
+        //   => gunakan id ASC untuk pembagian halaman.
+        // - Dalam satu halaman, tampilkan data terbaru dulu (berdasarkan assignment_date).
+        $letters = $letters->orderBy('id', 'asc')->paginate(10)->withQueryString();
+        $letters->setCollection(
+            $letters->getCollection()
+                ->sortByDesc(fn ($letter) => $letter->assignment_date ?? $letter->created_at)
+                ->values()
+        );
+
         return view('dashboard.assignment-letters.index', compact('letters', 'search', 'status'));
     }
 
@@ -116,8 +125,8 @@ class AssignmentLetterController extends Controller
         $letter = AssignmentLetter::findOrFail($id);
         
         // Delete PDF file if exists
-        if ($letter->pdf_path && Storage::exists($letter->pdf_path)) {
-            Storage::delete($letter->pdf_path);
+        if ($letter->pdf_path && Storage::disk('public')->exists($letter->pdf_path)) {
+            Storage::disk('public')->delete($letter->pdf_path);
         }
         
         $letter->delete();
@@ -133,14 +142,14 @@ class AssignmentLetterController extends Controller
         $letter = AssignmentLetter::with(['signer', 'assignedTo'])->findOrFail($id);
         
         // Generate PDF
-        $pdf = PDF::loadView('dashboard.assignment-letters.pdf', compact('letter'));
+        $pdf = Pdf::loadView('dashboard.assignment-letters.pdf', compact('letter'));
         $pdf->setPaper('A4', 'portrait');
         
         // Save PDF to storage
         $filename = 'surat_tugas_' . str_replace(['/', '\\'], '_', $letter->letter_number) . '_' . date('Y-m-d_H-i-s') . '.pdf';
         $path = 'assignment-letters/' . $filename;
         
-        Storage::put('public/' . $path, $pdf->output());
+        Storage::disk('public')->put($path, $pdf->output());
         
         // Update letter with PDF path
         $letter->update(['pdf_path' => $path]);
@@ -155,10 +164,10 @@ class AssignmentLetterController extends Controller
     {
         $letter = AssignmentLetter::findOrFail($id);
         
-        if (!$letter->pdf_path || !Storage::exists('public/' . $letter->pdf_path)) {
+        if (!$letter->pdf_path || !Storage::disk('public')->exists($letter->pdf_path)) {
             return redirect()->back()->with('error', 'File PDF tidak ditemukan!');
         }
         
-        return Storage::download('public/' . $letter->pdf_path);
+        return Storage::disk('public')->download($letter->pdf_path);
     }
 }

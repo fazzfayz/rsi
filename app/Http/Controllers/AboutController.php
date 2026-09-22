@@ -24,6 +24,8 @@ class AboutController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'vision' => 'nullable|string',
+            'mission' => 'nullable|string',
             'list_items' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -44,6 +46,8 @@ class AboutController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'vision' => 'nullable|string',
+            'mission' => 'nullable|string',
             'list_items' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -78,6 +82,8 @@ class AboutController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'vision' => 'nullable|string',
+            'mission' => 'nullable|string',
             'list_items' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);

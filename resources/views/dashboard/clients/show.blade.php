@@ -21,6 +21,12 @@
                         <label class="block text-sm font-medium text-gray-600">Status</label>
                         <div class="mt-1">{!! $client->status_badge !!}</div>
                     </div>
+                    @if($client->jabatan)
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Jabatan</label>
+                        <p class="text-gray-900">{{ $client->jabatan }}</p>
+                    </div>
+                    @endif
                     <div>
                         <label class="block text-sm font-medium text-gray-600">Tahun Bergabung</label>
                         <p class="text-lg text-gray-900">{{ $client->join_year }}</p>

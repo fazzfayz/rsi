@@ -27,6 +27,7 @@ class PurchaseOrder extends Model
         'vat_amount',
         'total_amount',
         'notes',
+        'terms',
         'status',
         'created_by',
         'approved_by',
@@ -39,7 +40,8 @@ class PurchaseOrder extends Model
         'approved_at' => 'datetime',
         'subtotal' => 'decimal:2',
         'vat_amount' => 'decimal:2',
-        'total_amount' => 'decimal:2'
+        'total_amount' => 'decimal:2',
+        'terms' => 'array',
     ];
 
     // Relationships
@@ -77,13 +79,13 @@ class PurchaseOrder extends Model
     public function getStatusBadgeAttribute()
     {
         $badges = [
-            'draft' => 'bg-gray-100 text-gray-800',
-            'pending' => 'bg-yellow-100 text-yellow-800',
-            'approved' => 'bg-green-100 text-green-800',
-            'cancelled' => 'bg-red-100 text-red-800'
+            'draft' => 'badge-secondary',
+            'pending' => 'badge-warning',
+            'approved' => 'badge-success',
+            'cancelled' => 'badge-danger'
         ];
 
-        return $badges[$this->status] ?? 'bg-gray-100 text-gray-800';
+        return $badges[$this->status] ?? 'badge-secondary';
     }
 
     public function getStatusTextAttribute()
@@ -131,17 +133,42 @@ class PurchaseOrder extends Model
         return sprintf('%03d/RSI.PO/%s/%s', $sequence, $month, $year);
     }
 
-    // Calculate totals
+    /**
+     * Calculate totals (subtotal, VAT, and total amount)
+     * This method recalculates all totals based on items
+     */
     public function calculateTotals()
     {
-        $subtotal = $this->items->sum('total_price');
-        $this->subtotal = $subtotal;
+        // Reload items to ensure we have latest data
+        $this->load('items');
         
-        // VAT 12%
-        $this->vat_amount = $subtotal * 0.12;
+        // Calculate subtotal from all items
+        $subtotal = $this->items->sum(function($item) {
+            // Ensure total_price is calculated if not set
+            if (!$item->total_price && $item->quantity && $item->unit_price) {
+                $item->total_price = $item->quantity * $item->unit_price;
+                $item->save();
+            }
+            return $item->total_price ?? 0;
+        });
         
-        $this->total_amount = $subtotal + $this->vat_amount;
+        $this->subtotal = round($subtotal, 2);
+        
+        // VAT 11%
+        $this->vat_amount = round($subtotal * 0.11, 2);
+        
+        // Total amount = subtotal + VAT
+        $this->total_amount = round($subtotal + $this->vat_amount, 2);
+        
         $this->save();
+    }
+
+    /**
+     * Recalculate totals after items are modified
+     */
+    public function refreshTotals()
+    {
+        $this->calculateTotals();
     }
 
     // Get formatted amounts

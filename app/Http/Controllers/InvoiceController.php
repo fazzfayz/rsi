@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Client;
+use App\Models\PurchaseOrder;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +40,11 @@ class InvoiceController extends Controller
      */
     public function create()
     {
-        $clients = Client::where('status', 'active')->get();
+        $clients = Client::where('status', 'active')
+            ->with(['purchaseOrders' => function ($q) {
+                $q->orderByDesc('po_date')->orderByDesc('id');
+            }])
+            ->get();
         $employees = Employee::where('status', 'active')->get();
         
         return view('dashboard.invoices.create', compact('clients', 'employees'));
@@ -56,6 +61,7 @@ class InvoiceController extends Controller
             'invoice_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:invoice_date',
             'vendor_code' => 'nullable|string|max:255',
+            'po_ref_number' => 'nullable|string|max:255',
             'attention_to' => 'nullable|string|max:255',
             'attention_name' => 'nullable|string',
             'include_ppn' => 'boolean',
@@ -112,7 +118,11 @@ class InvoiceController extends Controller
     public function edit(string $id)
     {
         $invoice = Invoice::with(['items'])->findOrFail($id);
-        $clients = Client::where('status', 'active')->get();
+        $clients = Client::where('status', 'active')
+            ->with(['purchaseOrders' => function ($q) {
+                $q->orderByDesc('po_date')->orderByDesc('id');
+            }])
+            ->get();
         $employees = Employee::where('status', 'active')->get();
         
         return view('dashboard.invoices.edit', compact('invoice', 'clients', 'employees'));
@@ -129,6 +139,7 @@ class InvoiceController extends Controller
             'invoice_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:invoice_date',
             'vendor_code' => 'nullable|string|max:255',
+            'po_ref_number' => 'nullable|string|max:255',
             'attention_to' => 'nullable|string|max:255',
             'attention_name' => 'nullable|string',
             'include_ppn' => 'boolean',

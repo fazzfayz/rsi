@@ -1,32 +1,36 @@
 @extends('layouts.admin')
 
-@section('header')
-    <h1 class="m-0">Detail Invoice</h1>
-@endsection
-
 @section('content')
 <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-
+    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-                <!-- Invoice Header -->
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900">{{ $invoice->invoice_number }}</h2>
-                        <p class="text-gray-600">{{ $invoice->client->name }}</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="px-3 py-1 text-sm font-semibold rounded-full {{ $invoice->status_badge }}">
-                            {{ $invoice->status_text }}
-                        </span>
+            <div class="p-6 text-gray-900">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Detail Invoice</h2>
+                    <div class="flex space-x-2">
+                        <a href="{{ route('invoices.edit', $invoice->id) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                            <i class="fas fa-edit mr-2"></i>Edit
+                        </a>
+                        @if($invoice->pdf_path && file_exists(public_path($invoice->pdf_path)))
+                            <a href="{{ route('invoices.download-pdf', $invoice->id) }}" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                                <i class="fas fa-download mr-2"></i>Download PDF
+                            </a>
+                        @else
+                            <a href="{{ route('invoices.generate-pdf', $invoice->id) }}" class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded">
+                                <i class="fas fa-file-pdf mr-2"></i>Generate PDF
+                            </a>
+                        @endif
+                        <a href="{{ route('invoices.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            <i class="fas fa-arrow-left mr-2"></i>Kembali
+                        </a>
                     </div>
                 </div>
+
+                @if(session('success'))
+                    <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
                 <!-- Invoice Details -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -45,6 +49,12 @@
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Kode Vendor:</span>
                                     <span class="font-medium">{{ $invoice->vendor_code }}</span>
+                                </div>
+                            @endif
+                            @if($invoice->po_ref_number)
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">PO Ref Number:</span>
+                                    <span class="font-medium">{{ $invoice->po_ref_number }}</span>
                                 </div>
                             @endif
                             @if($invoice->attention_to)

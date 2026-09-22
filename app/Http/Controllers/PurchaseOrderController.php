@@ -31,8 +31,9 @@ class PurchaseOrderController extends Controller
         $clients = Client::where('status', 'active')->get();
         $employees = Employee::where('status', 'active')->get();
         $poNumber = PurchaseOrder::generatePoNumber();
+        $signatoryNaniHadijah = Employee::where('name', 'like', '%Nani Hadijah%')->first();
         
-        return view('dashboard.purchase-orders.create', compact('clients', 'employees', 'poNumber'));
+        return view('dashboard.purchase-orders.create', compact('clients', 'employees', 'poNumber', 'signatoryNaniHadijah'));
     }
 
     public function store(Request $request)
@@ -46,12 +47,15 @@ class PurchaseOrderController extends Controller
             'ship_to_address' => 'required|string',
             'attention_to' => 'nullable|string',
             'attention_name' => 'nullable|string',
-            'signatory_employee_id' => 'required|exists:employees,id',
+            'signatory_employee_id' => 'nullable|exists:employees,id',
             'notes' => 'nullable|string',
+            'terms' => 'nullable|array',
+            'terms.*' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
             'items.*.part_number' => 'nullable|string',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.item_type' => 'nullable|string|in:hardware,service',
+            'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.uom' => 'required|string',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
@@ -62,6 +66,10 @@ class PurchaseOrderController extends Controller
             // Get vendor data
             $vendor = Client::findOrFail($request->vendor_id);
 
+            // Penandatangan tetap Nani Hadijah
+            $signatoryId = $request->signatory_employee_id
+                ?: Employee::where('name', 'like', '%Nani Hadijah%')->first()?->id;
+
             // Create PO
             $purchaseOrder = PurchaseOrder::create([
                 'po_number' => $request->po_number,
@@ -71,13 +79,14 @@ class PurchaseOrderController extends Controller
                 'vendor_name' => $vendor->name,
                 'vendor_address' => $vendor->address,
                 'vendor_email' => $vendor->email,
-                'vendor_contact_person' => $vendor->phone, // Using phone as contact person for now
+                'vendor_contact_person' => $vendor->contact_person ?? $vendor->phone,
                 'ship_to_company' => $request->ship_to_company,
                 'ship_to_address' => $request->ship_to_address,
                 'attention_to' => $request->attention_to,
                 'attention_name' => $request->attention_name,
-                'signatory_employee_id' => $request->signatory_employee_id,
+                'signatory_employee_id' => $signatoryId,
                 'notes' => $request->notes,
+                'terms' => array_values(array_filter($request->terms ?? [])),
                 'subtotal' => 0,
                 'vat_amount' => 0,
                 'total_amount' => 0,
@@ -87,20 +96,27 @@ class PurchaseOrderController extends Controller
 
             // Create PO items
             foreach ($request->items as $item) {
-                $totalPrice = $item['quantity'] * $item['unit_price'];
+                // Ensure quantity and unit_price are numeric
+                $quantity = (float) $item['quantity'];
+                $unitPrice = (float) $item['unit_price'];
+                
+                // Calculate total price: Total = Quantity × Unit Price
+                $totalPrice = round($quantity * $unitPrice, 2);
                 
                 PurchaseOrderItem::create([
                     'purchase_order_id' => $purchaseOrder->id,
+                    'item_type' => $item['item_type'] ?? 'hardware',
                     'description' => $item['description'],
-                    'part_number' => $item['part_number'],
-                    'quantity' => $item['quantity'],
+                    'part_number' => $item['part_number'] ?? null,
+                    'quantity' => $quantity,
                     'uom' => $item['uom'],
-                    'unit_price' => $item['unit_price'],
+                    'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
                 ]);
             }
 
-            // Calculate totals
+            // Reload items relationship and calculate totals
+            $purchaseOrder->load('items');
             $purchaseOrder->calculateTotals();
 
             DB::commit();
@@ -127,8 +143,9 @@ class PurchaseOrderController extends Controller
         $clients = Client::where('status', 'active')->get();
         $employees = Employee::where('status', 'active')->get();
         $purchaseOrder->load('items');
+        $signatoryNaniHadijah = Employee::where('name', 'like', '%Nani Hadijah%')->first();
         
-        return view('dashboard.purchase-orders.edit', compact('purchaseOrder', 'clients', 'employees'));
+        return view('dashboard.purchase-orders.edit', compact('purchaseOrder', 'clients', 'employees', 'signatoryNaniHadijah'));
     }
 
     public function update(Request $request, PurchaseOrder $purchaseOrder)
@@ -142,12 +159,15 @@ class PurchaseOrderController extends Controller
             'ship_to_address' => 'required|string',
             'attention_to' => 'nullable|string',
             'attention_name' => 'nullable|string',
-            'signatory_employee_id' => 'required|exists:employees,id',
+            'signatory_employee_id' => 'nullable|exists:employees,id',
             'notes' => 'nullable|string',
+            'terms' => 'nullable|array',
+            'terms.*' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
             'items.*.part_number' => 'nullable|string',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.item_type' => 'nullable|string|in:hardware,service',
+            'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.uom' => 'required|string',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
@@ -158,6 +178,10 @@ class PurchaseOrderController extends Controller
             // Get vendor data
             $vendor = Client::findOrFail($request->vendor_id);
 
+            // Penandatangan tetap Nani Hadijah
+            $signatoryId = $request->signatory_employee_id
+                ?: Employee::where('name', 'like', '%Nani Hadijah%')->first()?->id;
+
             // Update PO
             $purchaseOrder->update([
                 'po_number' => $request->po_number,
@@ -167,13 +191,14 @@ class PurchaseOrderController extends Controller
                 'vendor_name' => $vendor->name,
                 'vendor_address' => $vendor->address,
                 'vendor_email' => $vendor->email,
-                'vendor_contact_person' => $vendor->phone,
+                'vendor_contact_person' => $vendor->contact_person ?? $vendor->phone,
                 'ship_to_company' => $request->ship_to_company,
                 'ship_to_address' => $request->ship_to_address,
                 'attention_to' => $request->attention_to,
                 'attention_name' => $request->attention_name,
-                'signatory_employee_id' => $request->signatory_employee_id,
+                'signatory_employee_id' => $signatoryId,
                 'notes' => $request->notes,
+                'terms' => array_values(array_filter($request->terms ?? [])),
             ]);
 
             // Delete existing items
@@ -181,20 +206,27 @@ class PurchaseOrderController extends Controller
 
             // Create new PO items
             foreach ($request->items as $item) {
-                $totalPrice = $item['quantity'] * $item['unit_price'];
+                // Ensure quantity and unit_price are numeric
+                $quantity = (float) $item['quantity'];
+                $unitPrice = (float) $item['unit_price'];
+                
+                // Calculate total price: Total = Quantity × Unit Price
+                $totalPrice = round($quantity * $unitPrice, 2);
                 
                 PurchaseOrderItem::create([
                     'purchase_order_id' => $purchaseOrder->id,
+                    'item_type' => $item['item_type'] ?? 'hardware',
                     'description' => $item['description'],
-                    'part_number' => $item['part_number'],
-                    'quantity' => $item['quantity'],
+                    'part_number' => $item['part_number'] ?? null,
+                    'quantity' => $quantity,
                     'uom' => $item['uom'],
-                    'unit_price' => $item['unit_price'],
+                    'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
                 ]);
             }
 
-            // Calculate totals
+            // Reload items relationship and calculate totals
+            $purchaseOrder->load('items');
             $purchaseOrder->calculateTotals();
 
             DB::commit();
@@ -226,9 +258,10 @@ class PurchaseOrderController extends Controller
         
         $pdf = Pdf::loadView('dashboard.purchase-orders.pdf', compact('purchaseOrder'));
         
-        $filename = 'PO-' . preg_replace('/[\/\\\\]/', '-', $purchaseOrder->po_number) . '.pdf';
+        $san = function ($s) { return preg_replace('/[\/\\\\:*?"<>|]/', '-', (string) $s); };
+        $filename = $san($purchaseOrder->po_number ?? 'PO') . ' - ' . $san($purchaseOrder->vendor_name ?? '') . ' - POS Galia.pdf';
         return $pdf->download($filename);
-            }
+    }
 
     public function getVendorData(Request $request)
     {
@@ -242,7 +275,7 @@ class PurchaseOrderController extends Controller
             'name' => $vendor->name,
             'address' => $vendor->address,
             'email' => $vendor->email,
-            'contact_person' => $vendor->phone,
+            'contact_person' => $vendor->contact_person ?? $vendor->phone,
         ]);
     }
 } 
