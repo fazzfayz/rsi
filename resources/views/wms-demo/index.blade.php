@@ -6,6 +6,11 @@
     <title>RSI WMS • Warehouse Management System (Demo Standar)</title>
     <meta name="description" content="Sistem Manajemen Pergudangan (WMS) RSI. Kelola master barang, inbound PO, outbound Surat Jalan, denah rak, dan mutasi stok secara mudah dan efisien.">
     
+    <!-- Favicon (Tab Icon) -->
+    <link rel="icon" type="image/png" href="{{ asset('img/rsi.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('img/rsi.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/rsi.png') }}">
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -130,18 +135,18 @@
                     <i class="fas fa-bars text-lg"></i>
                 </button>
 
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-lg bg-blue-700 text-white flex items-center justify-center font-bold text-base shadow-sm">
-                        <i class="fas fa-boxes-stacked"></i>
+                <a href="{{ route('landing') }}" class="flex items-center gap-3 group no-underline">
+                    <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 shadow-sm group-hover:border-blue-400 group-hover:shadow-md transition-all">
+                        <img src="{{ asset('img/rsi.png') }}" alt="Logo RSI" class="w-full h-full object-contain">
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="font-extrabold text-slate-900 text-sm tracking-tight">RSI WMS</span>
+                            <span class="font-extrabold text-slate-900 text-sm tracking-tight group-hover:text-blue-700 transition-colors">RSI WMS</span>
                             <span class="px-1.5 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold">Standard ERP</span>
                         </div>
                         <p class="text-[11px] text-slate-500 font-medium">Warehouse Management System</p>
                     </div>
-                </div>
+                </a>
 
                 <div class="hidden lg:flex items-center gap-2 ml-6 pl-6 border-l border-slate-200 text-xs text-slate-600">
                     <i class="fas fa-warehouse text-blue-600"></i>
@@ -1416,8 +1421,8 @@
             </button>
 
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-lg">
-                    <i class="fas fa-handshake"></i>
+                <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-1.5 shadow-sm">
+                    <img src="{{ asset('img/rsi.png') }}" alt="Logo RSI" class="w-full h-full object-contain">
                 </div>
                 <div>
                     <h3 class="text-base font-bold text-slate-900">Konsultasi & Penawaran WMS RSI</h3>
