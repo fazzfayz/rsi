@@ -2,7 +2,7 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "php-fpm -D && nginx -g 'daemon off;'"
+preDeployCommand = "php artisan migrate --force"
 healthcheckPath = "/"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
