@@ -522,13 +522,6 @@
                         </select>
                     </div>
 
-                    <!-- Right Add Button -->
-                    <button type="button"
-                            @click="openAddItemModal()"
-                            class="w-full sm:w-auto px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors shrink-0">
-                        <i class="fas fa-plus"></i>
-                        <span>+ Tambah Barang Baru</span>
-                    </button>
                 </div>
 
                 <!-- Main Inventory Table -->
@@ -614,18 +607,11 @@
             <!-- ========================================================= -->
             <div x-show="activeTab === 'inbound'" class="space-y-4">
                 
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900">Daftar Faktur Pembelian / PO Masuk (Incoming)</h2>
                         <p class="text-xs text-slate-500">Barang dari pemasok yang tiba di dermaga penerimaan untuk dibongkar dan ditempatkan ke rak.</p>
                     </div>
-
-                    <button type="button"
-                            @click="openAddPOModal()"
-                            class="w-full sm:w-auto px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors shrink-0">
-                        <i class="fas fa-plus"></i>
-                        <span>+ Buat PO Masuk Baru</span>
-                    </button>
                 </div>
 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -697,18 +683,11 @@
             <!-- ========================================================= -->
             <div x-show="activeTab === 'outbound'" class="space-y-4">
                 
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900">Daftar Surat Jalan / Delivery Order (DO)</h2>
                         <p class="text-xs text-slate-500">Pesanan barang keluar untuk pelanggan yang harus diambil (picking), dikemas, dan dikirim.</p>
                     </div>
-
-                    <button type="button"
-                            @click="openAddOrderModal()"
-                            class="w-full sm:w-auto px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors shrink-0">
-                        <i class="fas fa-plus"></i>
-                        <span>+ Buat Surat Jalan (DO) Baru</span>
-                    </button>
                 </div>
 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
